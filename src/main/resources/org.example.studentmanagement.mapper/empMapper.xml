@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.example.studentmanagement.mapper.empMapper">
+
+    <!-- 分页 + 动态条件查询 -->
+    <select id="page" resultType="org.example.studentmanagement.pojo.emp">
+        select
+       *
+        from emp
+        <where>
+            <!-- 性别筛选 -->
+            <if test="gender != null and gender != ''">
+                gender = #{gender}
+            </if>
+
+            <!-- 部门筛选 -->
+            <if test="deptId != null">
+                and deptId = #{deptId}
+            </if>
+
+        </where>
+
+        order by id
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <!-- 查询总记录数（分页必用） -->
+    <select id="count" resultType="long">
+        select count(*)
+        from emp
+        <where>
+            <if test="gender != null and gender != ''">
+                gender = #{gender}
+            </if>
+
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+
+            <if test="deptId != null">
+                and deptId = #{deptId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

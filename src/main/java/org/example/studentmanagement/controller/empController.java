@@ -2,6 +2,7 @@ package org.example.studentmanagement.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.studentmanagement.pojo.emp;
+import org.example.studentmanagement.pojo.empQuery;
 import org.example.studentmanagement.pojo.pageResult;
 import org.example.studentmanagement.pojo.result;
 import org.example.studentmanagement.service.empService;
@@ -22,9 +23,8 @@ public class empController {
 
 
     @GetMapping("/emps")
-    public result list(@RequestParam(defaultValue = "1") Long page,
-                       @RequestParam(defaultValue = "10") Integer pageSize) {
-        pageResult<emp> pageResult = empService.list(page, pageSize);
+    public result list(empQuery empQuery) {
+        pageResult<emp> pageResult = empService.list(empQuery);
         return result.success(pageResult);
     }
 }

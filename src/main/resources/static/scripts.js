@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const empSearchInput = document.getElementById('emp-search-input');
     const empSearchBtn = document.getElementById('emp-search-btn');
     const empRefreshBtn = document.getElementById('emp-refresh-btn');
+    const empGenderSelect = document.getElementById('emp-gender-select');
+    const empDeptSelect = document.getElementById('emp-dept-select');
     
     // 分页相关元素
     const empPagination = document.getElementById('emp-pagination');
@@ -45,12 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const empPageNumbers = document.getElementById('emp-page-numbers');
     const empPageSizeSelect = document.getElementById('emp-page-size-select');
 
-    // 分页状态
+    // 查询状态
     let currentPage = 1;
     let pageSize = 10;
     let totalRecords = 0;
     let totalPages = 0;
-    let isSearchMode = false; // 是否处于搜索模式
+    let selectedGender = ''; // 选中的性别筛选
+    let selectedDeptId = ''; // 选中的部门ID筛选
+    let searchName = ''; // 搜索的姓名
+    let departments = []; // 部门列表
 
     // 显示员工反馈消息
     function showEmpFeedback(message, isError = false) {
@@ -63,14 +68,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 获取并渲染员工列表
-    async function fetchEmployees(page = 1, size = pageSize) {
+    async function fetchEmployees(page = 1, size = pageSize, gender = selectedGender, deptId = selectedDeptId, name = searchName) {
         try {
             empLoadingMessage.style.display = 'block';
             empErrorMessage.style.display = 'none';
             empTableBody.innerHTML = '';
             empPagination.style.display = 'none';
 
-            const response = await fetch(`${EMP_API_URL}?page=${page}&pageSize=${size}`);
+            // 构建查询参数（使用小写的参数名，Spring会自动绑定到empQuery对象）
+            const params = new URLSearchParams();
+            params.append('page', page);
+            params.append('pageSize', size);
+            if (gender && gender !== '') {
+                params.append('gender', gender);
+            }
+            if (deptId && deptId !== '') {
+                params.append('deptId', deptId);
+            }
+            if (name && name.trim() !== '') {
+                params.append('name', name.trim());
+            }
+
+            const response = await fetch(`${EMP_API_URL}?${params.toString()}`);
             if (!response.ok) {
                 throw new Error(`HTTP错误! 状态码: ${response.status}`);
             }
@@ -79,9 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.code === 1 && result.data) {
                 const pageData = result.data;
                 if (pageData.records && Array.isArray(pageData.records)) {
-                    // 更新分页状态
+                    // 更新查询状态
                     currentPage = page;
                     pageSize = size;
+                    selectedGender = gender || '';
+                    selectedDeptId = deptId || '';
+                    searchName = name || '';
                     totalRecords = pageData.total || 0;
                     totalPages = Math.ceil(totalRecords / pageSize);
                     
@@ -129,39 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 搜索员工（注意：当前搜索是在前端进行的，如果需要后端搜索，需要修改API）
+    // 搜索员工（使用后端搜索）
     function searchEmployees() {
-        const searchTerm = empSearchInput.value.trim().toLowerCase();
-        if (!searchTerm) {
-            // 清空搜索，恢复分页模式
-            isSearchMode = false;
-            fetchEmployees(currentPage, pageSize);
-            return;
-        }
-
-        // 搜索模式：需要重新获取所有数据（或者可以改为后端搜索）
-        // 这里暂时禁用分页，显示所有匹配结果
-        isSearchMode = true;
-        empPagination.style.display = 'none';
-        
-        // 注意：如果数据量大，建议改为后端搜索
-        // 这里需要获取所有数据进行前端过滤（仅作示例）
-        fetch(`${EMP_API_URL}?page=1&pageSize=1000`)
-            .then(res => res.json())
-            .then(result => {
-                if (result.code === 1 && result.data && result.data.records) {
-                    const allData = result.data.records;
-                    const filtered = allData.filter(emp => {
-                        const name = (emp.name || '').toLowerCase();
-                        const username = (emp.username || '').toLowerCase();
-                        return name.includes(searchTerm) || username.includes(searchTerm);
-                    });
-                    renderEmployees(filtered);
-                }
-            })
-            .catch(error => {
-                showEmpError('搜索失败: ' + error.message);
-            });
+        const searchTerm = empSearchInput.value.trim();
+        // 使用后端搜索，回到第一页
+        fetchEmployees(1, pageSize, selectedGender, selectedDeptId, searchTerm);
     }
 
     // 更新分页控件
@@ -223,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = pageNum;
         btn.addEventListener('click', () => {
             if (pageNum !== currentPage) {
-                fetchEmployees(pageNum, pageSize);
+                fetchEmployees(pageNum, pageSize, selectedGender, selectedDeptId, searchName);
             }
         });
         empPageNumbers.appendChild(btn);
@@ -237,6 +231,31 @@ document.addEventListener('DOMContentLoaded', () => {
         empPageNumbers.appendChild(ellipsis);
     }
     
+    // 加载部门列表
+    async function loadDepartments() {
+        try {
+            const response = await fetch(DEPT_API_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP错误! 状态码: ${response.status}`);
+            }
+            const result = await response.json();
+            
+            if (result.code === 1 && Array.isArray(result.data)) {
+                departments = result.data;
+                // 填充部门下拉框
+                empDeptSelect.innerHTML = '<option value="">全部部门</option>';
+                departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.id;
+                    option.textContent = dept.name;
+                    empDeptSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('加载部门列表失败:', error);
+        }
+    }
+    
     // 事件监听
     empSearchBtn.addEventListener('click', searchEmployees);
     empSearchInput.addEventListener('keypress', (e) => {
@@ -245,27 +264,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     empRefreshBtn.addEventListener('click', () => {
-        isSearchMode = false;
         empSearchInput.value = '';
-        fetchEmployees(currentPage, pageSize);
+        selectedGender = '';
+        selectedDeptId = '';
+        searchName = '';
+        empGenderSelect.value = '';
+        empDeptSelect.value = '';
+        fetchEmployees(1, pageSize, '', '', '');
+    });
+    
+    // 性别筛选事件监听
+    empGenderSelect.addEventListener('change', (e) => {
+        selectedGender = e.target.value;
+        // 改变性别筛选时，回到第一页并重新加载数据
+        fetchEmployees(1, pageSize, selectedGender, selectedDeptId, searchName);
+    });
+    
+    // 部门筛选事件监听
+    empDeptSelect.addEventListener('change', (e) => {
+        selectedDeptId = e.target.value;
+        // 改变部门筛选时，回到第一页并重新加载数据
+        fetchEmployees(1, pageSize, selectedGender, selectedDeptId, searchName);
     });
     
     // 分页控件事件监听
     empPrevBtn.addEventListener('click', () => {
         if (currentPage > 1) {
-            fetchEmployees(currentPage - 1, pageSize);
+            fetchEmployees(currentPage - 1, pageSize, selectedGender, selectedDeptId, searchName);
         }
     });
     
     empNextBtn.addEventListener('click', () => {
         if (currentPage < totalPages) {
-            fetchEmployees(currentPage + 1, pageSize);
+            fetchEmployees(currentPage + 1, pageSize, selectedGender, selectedDeptId, searchName);
         }
     });
     
     empPageSizeSelect.addEventListener('change', (e) => {
         const newPageSize = parseInt(e.target.value);
-        fetchEmployees(1, newPageSize); // 改变每页大小时回到第一页
+        fetchEmployees(1, newPageSize, selectedGender, selectedDeptId, searchName); // 改变每页大小时回到第一页
     });
 
     // 显示员工错误消息
@@ -445,6 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return jobMap[job] || `职位${job}`;
     }
 
-    // 初始化：加载员工数据（默认显示员工查询标签页）
-    fetchEmployees(1, 10);
+    // 初始化：加载部门列表和员工数据（默认显示员工查询标签页）
+    loadDepartments();
+    fetchEmployees(1, 10, '', '', '');
 });

@@ -20,7 +20,16 @@
         <div id="emp-tab" class="tab-content active">
             <h2>员工查询</h2>
             <div class="search-container">
-                <input type="text" id="emp-search-input" placeholder="输入员工姓名或用户名搜索..." class="search-input">
+                <input type="text" id="emp-search-input" placeholder="输入员工姓名搜索..." class="search-input">
+                <select id="emp-gender-select" class="filter-select">
+                    <option value="">全部性别</option>
+                    <option value="1">男</option>
+                    <option value="2">女</option>
+                </select>
+                <select id="emp-dept-select" class="filter-select">
+                    <option value="">全部部门</option>
+                    <!-- 部门选项将由JavaScript动态填充 -->
+                </select>
                 <button id="emp-search-btn" class="search-btn">搜索</button>
                 <button id="emp-refresh-btn" class="refresh-btn">刷新</button>
             </div>

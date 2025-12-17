@@ -92,6 +92,22 @@ h2 {
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
 .search-btn, .refresh-btn {
     padding: 10px 20px;
     background-color: #007bff;
