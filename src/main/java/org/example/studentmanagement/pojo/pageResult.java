@@ -1,15 +1,18 @@
 package org.example.studentmanagement.pojo;
-
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class pageBean {
+public class pageResult<T> {
 
-    public Long total;
-    public Integer pageSize;
+    /** 当前页数据 */
+    private List<T> records;
+
+    /** 总记录数 */
+    private long total;
 }

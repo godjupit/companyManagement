@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>员工管理系统</h1>
+
+        <!-- 标签页导航 -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="emp">员工查询</button>
+            <button class="tab-btn" data-tab="dept">部门查询</button>
+        </div>
+
+        <!-- 员工查询模块 -->
+        <div id="emp-tab" class="tab-content active">
+            <h2>员工查询</h2>
+            <div class="search-container">
+                <input type="text" id="emp-search-input" placeholder="输入员工姓名或用户名搜索..." class="search-input">
+                <button id="emp-search-btn" class="search-btn">搜索</button>
+                <button id="emp-refresh-btn" class="refresh-btn">刷新</button>
+            </div>
+            <div id="emp-action-feedback" class="feedback-msg" style="display:none;"></div>
+            <table id="emps-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>姓名</th>
+                        <th>性别</th>
+                        <th>职位</th>
+                        <th>入职日期</th>
+                        <th>部门ID</th>
+                        <th>创建时间</th>
+                        <th>更新时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 数据将由JavaScript填充 -->
+                </tbody>
+            </table>
+            <div id="emp-loading-message" class="loading-message">加载员工数据...</div>
+            <div id="emp-error-message" class="error-msg" style="display:none;"></div>
+            
+            <!-- 分页控件 -->
+            <div id="emp-pagination" class="pagination-container" style="display:none;">
+                <div class="pagination-info">
+                    <span id="emp-page-info">第 1 页，共 1 页，总计 0 条记录</span>
+                </div>
+                <div class="pagination-controls">
+                    <button id="emp-prev-btn" class="pagination-btn" disabled>上一页</button>
+                    <div id="emp-page-numbers" class="page-numbers"></div>
+                    <button id="emp-next-btn" class="pagination-btn" disabled>下一页</button>
+                    <select id="emp-page-size-select" class="page-size-select">
+                        <option value="10">每页 10 条</option>
+                        <option value="20">每页 20 条</option>
+                        <option value="50">每页 50 条</option>
+                        <option value="100">每页 100 条</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 部门查询模块 -->
+        <div id="dept-tab" class="tab-content">
+            <h2>部门查询</h2>
+            
+            <div class="add-form-container">
+                <form id="add-dept-form">
+                    <input type="text" id="dept-name-input" placeholder="输入新部门名称" required>
+                    <button type="submit">添加部门</button>
+                </form>
+            </div>
+            <div id="dept-action-feedback" class="feedback-msg" style="display:none;"></div>
+
+            <table id="depts-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>部门名称</th>
+                        <th>创建时间</th>
+                        <th>更新时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 数据将由JavaScript填充 -->
+                </tbody>
+            </table>
+            <div id="dept-loading-message" class="loading-message">加载部门数据...</div>
+            <div id="dept-error-message" class="error-msg" style="display:none;"></div>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>
